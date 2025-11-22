@@ -53,3 +53,5 @@ external/orbslam3/Examples/*/stereo_*
 external/orbslam3/Examples/*/rgbd_*
 external/orbslam3/*.txt
 external/orbslam3/*.log
+# ORB vocabulary file (large)
+external/orbslam3/Vocabulary/ORBvoc.txt
