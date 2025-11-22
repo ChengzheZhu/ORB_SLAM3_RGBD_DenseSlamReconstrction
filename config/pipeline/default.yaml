@@ -1,0 +1,59 @@
+# ORB_SLAM3 + Open3D Dense Reconstruction Pipeline Configuration
+
+# Dataset Configuration
+dataset:
+  # Path to RealSense bag file
+  bag_file: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516.bag"
+
+  # Output directory for extracted frames (will be created if doesn't exist)
+  frames_dir: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516"
+
+  # Camera intrinsics JSON file (will be created during frame extraction)
+  intrinsic_file: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516/intrinsic.json"
+
+# Frame Extraction Settings
+extraction:
+  # Extract every Nth frame (1 = all frames, 3 = every 3rd frame)
+  frame_stride: 1
+
+  # Maximum number of frames to extract (0 = all frames)
+  max_frames: 0
+
+# ORB_SLAM3 Configuration
+orbslam:
+  # ORB_SLAM3 installation directory
+  slam_dir: "/home/chengzhe/projects/ORB_SLAM3"
+
+  # Camera configuration file for ORB_SLAM3
+  camera_config: "/home/chengzhe/projects/slam_dense_reconstruction/config/camera/RealSense_D456.yaml"
+
+  # Vocabulary file
+  vocab_file: "/home/chengzhe/projects/ORB_SLAM3/Vocabulary/ORBvoc.txt"
+
+  # Enable/disable visualization (true = viewer, false = headless for batch processing)
+  use_viewer: true
+
+# Dense Reconstruction Settings
+reconstruction:
+  # TSDF voxel size in meters (smaller = higher resolution, more memory)
+  voxel_size: 0.01
+
+  # Maximum depth in meters
+  depth_max: 3.0
+
+  # Depth truncation (distance beyond which depth is ignored)
+  depth_trunc: 3.0
+
+# Output Configuration
+output:
+  # Base output directory
+  base_dir: "/home/chengzhe/projects/slam_dense_reconstruction/output"
+
+  # Sparse reconstruction outputs (trajectories)
+  sparse_dir: "sparse"
+
+  # Dense reconstruction outputs (meshes)
+  dense_dir: "dense"
+
+  # Final mesh filename
+  mesh_name: "mesh.ply"
