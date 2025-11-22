@@ -5,7 +5,10 @@ echo "==========================================================================
 echo "ORB_SLAM3 Build Script"
 echo "================================================================================"
 
-ORB_SLAM3_DIR="/home/chengzhe/projects/ORB_SLAM3"
+# Get script directory and project root
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
+ORB_SLAM3_DIR="$PROJECT_DIR/external/orbslam3"
 
 # Color codes
 GREEN='\033[0;32m'
@@ -51,7 +54,7 @@ if ldconfig -p | grep -q libpangolin; then
     echo -e "${GREEN}✓ Pangolin found${NC}"
 else
     echo -e "${YELLOW}⚠ Pangolin not found - installing...${NC}"
-    bash "$(dirname "$0")/install_pangolin.sh"
+    bash "$SCRIPT_DIR/install_pangolin.sh"
 fi
 
 # Build third-party libraries
@@ -125,10 +128,10 @@ else
     exit 1
 fi
 
-if [ -f "$ORB_SLAM3_DIR/Examples/RGB-D/rgbd_realsense_D435i" ]; then
-    echo -e "${GREEN}✓ rgbd_realsense_D435i executable created${NC}"
+if [ -f "$ORB_SLAM3_DIR/Examples/RGB-D/rgbd_tum" ]; then
+    echo -e "${GREEN}✓ rgbd_tum executable created${NC}"
 else
-    echo -e "${RED}✗ rgbd_realsense_D435i not found - build failed${NC}"
+    echo -e "${RED}✗ rgbd_tum not found - build failed${NC}"
     exit 1
 fi
 
@@ -149,9 +152,8 @@ echo -e "${GREEN}ORB_SLAM3 Build Complete!${NC}"
 echo -e "${GREEN}================================================================================${NC}"
 echo ""
 echo "Library: $ORB_SLAM3_DIR/lib/libORB_SLAM3.so"
-echo "RGB-D Executable: $ORB_SLAM3_DIR/Examples/RGB-D/rgbd_realsense_D435i"
+echo "RGB-D Executable: $ORB_SLAM3_DIR/Examples/RGB-D/rgbd_tum"
 echo ""
 echo "Next steps:"
 echo "1. Download ORB vocabulary if missing"
-echo "2. Configure camera parameters for RealSense D456"
-echo "3. Test with: cd $ORB_SLAM3_DIR && ./Examples/RGB-D/rgbd_realsense_D435i"
+echo "2. Run the pipeline with: $PROJECT_DIR/bin/run_pipeline.py"

@@ -1,101 +1,129 @@
 # GitHub Setup Guide
 
+## Important: Git Submodule Note
+
+This project includes ORB_SLAM3 as a git submodule (`external/orbslam3/`). The submodule is already configured and will be included when you push to GitHub.
+
 ## Step-by-Step Instructions
 
 ### Step 1: Create GitHub Repository (On GitHub Website)
 
 1. Go to https://github.com/new
-2. Repository name: `slam-dense-reconstruction`
+2. Repository name: `ORB_SLAM3_RGBD_DenseSlamReconstrction` (or your preferred name)
 3. Description: `ORB_SLAM3 + Open3D pipeline for RGB-D SLAM and dense 3D reconstruction`
 4. Choose **Public** or **Private**
 5. **DO NOT** initialize with README, .gitignore, or license (we already have these)
 6. Click "Create repository"
 
-### Step 2: Initialize Local Git Repository
+### Step 2: Verify Local Git Repository
+
+The repository is already initialized with git and includes a submodule. Verify:
 
 ```bash
-cd /home/chengzhe/projects/slam_dense_reconstruction
+cd /home/chengzhe/projects/ORB_SLAM3_RGBD_DenseSlamReconstrction
 
-# Initialize git
-git init
+# Check git status
+git status
 
+# Check submodules
+git submodule status
+```
+
+You should see `external/orbslam3` as a submodule pointing to your ORB_SLAM3 fork.
+
+### Step 3: Create Initial Commit (if not already done)
+
+```bash
 # Add all files
 git add .
 
 # Create initial commit
-git commit -m "Initial commit: ORB_SLAM3 + Open3D dense reconstruction pipeline"
+git commit -m "Initial commit: ORB_SLAM3 + Open3D dense reconstruction pipeline
+
+Features:
+- ORB_SLAM3 integration (git submodule)
+- Open3D TSDF reconstruction
+- Configurable YAML pipeline system
+- Viewer toggle for batch/interactive modes
+- Complete documentation and examples
+"
 ```
 
-### Step 3: Connect to GitHub
+### Step 4: Connect to GitHub
 
 Replace `YOUR_USERNAME` with your GitHub username:
 
 ```bash
 # Add GitHub remote
-git remote add origin https://github.com/YOUR_USERNAME/slam-dense-reconstruction.git
+git remote add origin https://github.com/YOUR_USERNAME/ORB_SLAM3_RGBD_DenseSlamReconstrction.git
 
 # Or using SSH (if you have SSH keys set up):
-git remote add origin git@github.com:YOUR_USERNAME/slam-dense-reconstruction.git
+git remote add origin git@github.com:YOUR_USERNAME/ORB_SLAM3_RGBD_DenseSlamReconstrction.git
 ```
 
-### Step 4: Push to GitHub
+### Step 5: Push to GitHub
 
 ```bash
-# Push to main branch
+# Push to main branch (including submodules)
 git branch -M main
 git push -u origin main
 ```
 
-### Step 5: Verify Upload
+The git submodule will be pushed as a reference to your ORB_SLAM3 fork at `https://github.com/ChengzheZhu/ORB_SLAM3.git`.
 
-1. Go to `https://github.com/YOUR_USERNAME/slam-dense-reconstruction`
+### Step 6: Verify Upload
+
+1. Go to `https://github.com/YOUR_USERNAME/ORB_SLAM3_RGBD_DenseSlamReconstrction`
 2. You should see all your files!
-
-## Quick One-Liner (After Creating GitHub Repo)
-
-```bash
-cd /home/chengzhe/projects/slam_dense_reconstruction && \
-git init && \
-git add . && \
-git commit -m "Initial commit: ORB_SLAM3 + Open3D dense reconstruction pipeline" && \
-git remote add origin https://github.com/YOUR_USERNAME/slam-dense-reconstruction.git && \
-git branch -M main && \
-git push -u origin main
-```
+3. Navigate to `external/orbslam3` - it should show as a submodule link to your ORB_SLAM3 fork
 
 ## Files That Will Be Included
 
 ✅ **bin/** - Pipeline executables
-✅ **src/** - Source code modules
-✅ **config/** - Configuration files
-✅ **scripts/** - Utility scripts
+✅ **scripts/** - Pipeline scripts
+✅ **config/** - Configuration files (camera & pipeline)
 ✅ **install/** - Installation scripts
-✅ **external/** - Dependency documentation
+✅ **external/orbslam3** - ORB_SLAM3 submodule (reference only)
 ✅ **docs/** - All documentation
 ✅ **README.md** - Project overview
 ✅ **requirements.txt** - Python dependencies
 ✅ **.gitignore** - Ignore rules
+✅ **.gitmodules** - Submodule configuration
 
 ## Files That Will Be EXCLUDED (per .gitignore)
 
 ❌ **output/** - Generated trajectories and meshes
 ❌ **data/** - Large bag files
-❌ **\*.ply** - Mesh files
+❌ **external/orbslam3/build/** - ORB_SLAM3 build artifacts
+❌ **external/orbslam3/lib/** - ORB_SLAM3 compiled libraries
+❌ **\*.ply, \*.pcd** - Mesh/point cloud files
 ❌ **\*.log** - Log files
 ❌ **__pycache__/** - Python cache
 
-## After Upload
+## Cloning on Another Machine
 
-### Clone on Another Machine
+When others clone your repository, they need to initialize the submodule:
+
 ```bash
-git clone https://github.com/YOUR_USERNAME/slam-dense-reconstruction.git
-cd slam-dense-reconstruction
+# Method 1: Clone with submodules
+git clone --recursive https://github.com/YOUR_USERNAME/ORB_SLAM3_RGBD_DenseSlamReconstrction.git
+
+# Method 2: Clone then initialize submodules
+git clone https://github.com/YOUR_USERNAME/ORB_SLAM3_RGBD_DenseSlamReconstrction.git
+cd ORB_SLAM3_RGBD_DenseSlamReconstrction
+git submodule update --init --recursive
+
+# Then build
 ./install/install_dependencies.sh
-./install/build_orbslam3.sh
+conda create -n rs_open3d python=3.9
+conda activate rs_open3d
 pip install -r requirements.txt
+./scripts/install_pangolin.sh
+./scripts/build_orbslam3.sh
 ```
 
-### Update Repository After Changes
+## Update Repository After Changes
+
 ```bash
 # Check status
 git status
@@ -103,12 +131,34 @@ git status
 # Add changed files
 git add <files>
 
+# If you updated the submodule:
+cd external/orbslam3
+git checkout <new-commit>
+cd ../..
+git add external/orbslam3
+
 # Commit changes
 git commit -m "Description of changes"
 
 # Push to GitHub
 git push
 ```
+
+## Understanding the Submodule
+
+The `.gitmodules` file contains:
+
+```ini
+[submodule "external/orbslam3"]
+    path = external/orbslam3
+    url = https://github.com/ChengzheZhu/ORB_SLAM3.git
+```
+
+This means:
+- Your main repository references your ORB_SLAM3 fork
+- Only the specific commit hash is stored (not the full code)
+- Users must run `git submodule update --init` to download ORB_SLAM3
+- ORB_SLAM3 remains a separate repository that you can update independently
 
 ## Recommended Repository Settings
 
@@ -120,125 +170,97 @@ git push
 - `rgbd`
 - `realsense`
 - `computer-vision`
+- `tsdf`
+- `dense-reconstruction`
 
-### Create a Good README Badge Section
-Add to top of README.md:
+### Add Badges to README
 ```markdown
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 ```
 
-### Add a License
-Choose a license at https://choosealicense.com/
-Recommended: MIT or GPL-3.0
-
 ## Troubleshooting
 
-### Large Files Error
-If GitHub rejects push due to large files:
+### Submodule Shows as Modified
+
+If `git status` shows `external/orbslam3` as modified:
+
 ```bash
-# Check file sizes
-find . -type f -size +50M
+cd external/orbslam3
+git status  # Check what changed
+git checkout master  # Or the commit you want
+cd ../..
+git add external/orbslam3
+git commit -m "Update ORB_SLAM3 submodule reference"
+```
 
-# Add to .gitignore if needed
+### Large Files Error
+
+If GitHub rejects push due to large files:
+
+```bash
+# Find large files
+find . -type f -size +50M -not -path "./.git/*"
+
+# Add to .gitignore
 echo "path/to/large/file" >> .gitignore
-
-# Remove from git tracking but keep locally
 git rm --cached path/to/large/file
+git commit -m "Remove large file from tracking"
 ```
 
 ### Authentication Required
-If prompted for username/password:
 
-**Option 1: Use Personal Access Token (HTTPS)**
-1. Go to GitHub Settings → Developer settings → Personal access tokens
-2. Generate new token with `repo` scope
+**Option 1: Personal Access Token (HTTPS)**
+1. GitHub Settings → Developer settings → Personal access tokens
+2. Generate token with `repo` scope
 3. Use token as password when prompted
 
-**Option 2: Use SSH Keys**
-1. Generate SSH key: `ssh-keygen -t ed25519 -C "your_email@example.com"`
-2. Add to GitHub: Settings → SSH and GPG keys
-3. Use SSH URL instead of HTTPS
+**Option 2: SSH Keys**
+1. `ssh-keygen -t ed25519 -C "your_email@example.com"`
+2. Add public key to GitHub: Settings → SSH and GPG keys
+3. Use SSH URL: `git@github.com:YOUR_USERNAME/ORB_SLAM3_RGBD_DenseSlamReconstrction.git`
 
-### Already Have a Git Repo?
-```bash
-# Remove existing git (if any)
-rm -rf .git
+## Example README Updates
 
-# Start fresh
-git init
+Add installation note about submodules:
+
+```markdown
+## Installation
+
+### Clone with Submodules
+
+⚠️ **Important:** This project uses ORB_SLAM3 as a git submodule.
+
+\`\`\`bash
+git clone --recursive https://github.com/YOUR_USERNAME/ORB_SLAM3_RGBD_DenseSlamReconstrction.git
+\`\`\`
+
+If you forgot `--recursive`:
+
+\`\`\`bash
+git submodule update --init --recursive
+\`\`\`
 ```
 
-## Repository URL Format
+## Citation
 
-**HTTPS:**
-```
-https://github.com/YOUR_USERNAME/slam-dense-reconstruction.git
-```
-
-**SSH:**
-```
-git@github.com:YOUR_USERNAME/slam-dense-reconstruction.git
-```
-
-## Example Full Workflow
-
-```bash
-# 1. On local machine
-cd /home/chengzhe/projects/slam_dense_reconstruction
-git init
-git add .
-git commit -m "Initial commit: Complete ORB_SLAM3 + Open3D pipeline
-
-Features:
-- ORB_SLAM3 integration for sparse SLAM
-- Open3D TSDF reconstruction
-- Configurable pipeline system
-- Viewer toggle for batch processing
-- Complete documentation
-"
-
-# 2. Add GitHub remote (replace YOUR_USERNAME)
-git remote add origin https://github.com/YOUR_USERNAME/slam-dense-reconstruction.git
-
-# 3. Push to GitHub
-git branch -M main
-git push -u origin main
-
-# 4. Done! View at:
-# https://github.com/YOUR_USERNAME/slam-dense-reconstruction
-```
-
-## Making Repository Discoverable
-
-### Add to README.md
+Add to README.md:
 
 ```markdown
 ## Citation
 
-If you use this code in your research, please cite:
+If you use this pipeline in your research, please cite:
 
 \`\`\`bibtex
-@software{slam_dense_reconstruction,
+@software{orbslam3_open3d_pipeline,
   author = {Your Name},
-  title = {ORB_SLAM3 + Open3D Dense Reconstruction Pipeline},
+  title = {ORB\_SLAM3 + Open3D Dense Reconstruction Pipeline},
   year = {2024},
-  url = {https://github.com/YOUR_USERNAME/slam-dense-reconstruction}
+  url = {https://github.com/YOUR_USERNAME/ORB_SLAM3_RGBD_DenseSlamReconstrction}
 }
 \`\`\`
-```
 
-### Add Screenshots
-
-Create `docs/images/` directory and add:
-- SLAM visualization screenshot
-- Dense mesh result
-- Pipeline diagram
-
-Reference in README.md:
-```markdown
-## Results
-
-![SLAM Tracking](docs/images/slam_tracking.png)
-![Dense Mesh](docs/images/dense_mesh.png)
+This pipeline uses:
+- ORB\_SLAM3: https://github.com/UZ-SLAMLab/ORB_SLAM3
+- Open3D: http://www.open3d.org/
 ```

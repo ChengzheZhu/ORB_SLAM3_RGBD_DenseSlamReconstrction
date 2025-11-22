@@ -56,9 +56,10 @@ def main():
 
     args = parser.parse_args()
 
-    # Get script directory
+    # Get project root (parent of bin directory)
     script_dir = Path(__file__).parent
-    os.chdir(script_dir)
+    project_root = script_dir.parent
+    os.chdir(project_root)
 
     # Load configuration
     print("="*80)
@@ -67,10 +68,23 @@ def main():
 
     config_path = args.config
     if not os.path.isabs(config_path):
-        config_path = os.path.join(script_dir, config_path)
+        config_path = os.path.join(project_root, config_path)
 
-    print(f"\nLoading config: {config_path}")
+    print(f"\nProject root: {project_root}")
+    print(f"Loading config: {config_path}")
     config = load_config(config_path)
+
+    # Resolve relative paths in config to absolute paths
+    for key in ['slam_dir', 'camera_config', 'vocab_file']:
+        if key in config.get('orbslam', {}):
+            path = config['orbslam'][key]
+            if not os.path.isabs(path):
+                config['orbslam'][key] = os.path.join(project_root, path)
+
+    if 'base_dir' in config.get('output', {}):
+        path = config['output']['base_dir']
+        if not os.path.isabs(path):
+            config['output']['base_dir'] = os.path.join(project_root, path)
 
     # Override bag file if specified
     if args.bag:
@@ -96,7 +110,7 @@ def main():
     dense_dir = os.path.join(output_base, config['output']['dense_dir'])
 
     associations_file = os.path.join(output_base, 'associations.txt')
-    trajectory_tum = os.path.join(sparse_dir, 'trajectory_tum.txt')
+    trajectory_tum = os.path.join(sparse_dir, 'CameraTrajectory.txt')
     trajectory_o3d = os.path.join(sparse_dir, 'trajectory_open3d.log')
     mesh_file = os.path.join(dense_dir, config['output']['mesh_name'])
 
@@ -137,7 +151,9 @@ def main():
 
     # Step 2: Run ORB_SLAM3
     if args.start_step <= 2:
-        cmd = ['./scripts/01_run_orbslam3.sh', frames_dir]
+        # Add headless flag based on config
+        headless_flag = [] if config['orbslam'].get('use_viewer', True) else ['--headless']
+        cmd = ['./scripts/01_run_orbslam3.sh'] + headless_flag + [frames_dir]
 
         if not run_command(cmd, "Step 2: Run ORB_SLAM3"):
             return 1

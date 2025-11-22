@@ -1,87 +1,172 @@
-# ORB_SLAM3 + Open3D Dense Reconstruction Pipeline
+# Setup Guide
 
-## Overview
+This guide will help you set up the ORB_SLAM3 + Open3D dense reconstruction pipeline.
 
-This project combines:
-- **ORB_SLAM3** (CPU): Sparse SLAM for accurate global trajectory estimation
-- **Open3D**: Dense TSDF reconstruction using SLAM trajectory
+## Prerequisites
 
-## Workflow
+- Ubuntu 20.04+ or similar Linux distribution
+- Python 3.8+
+- Conda (recommended) or system Python
+- Git
 
-```
-RealSense .bag file
-    ↓
-[ORB_SLAM3] → Sparse map + Camera trajectory (TUM format)
-    ↓
-[Trajectory Converter] → Open3D-compatible pose format
-    ↓
-[Open3D TSDF Integration] → Dense 3D mesh
-```
+## Step 1: Clone the Repository
 
-## Environment Isolation Strategy
-
-### Option 1: Conda Environment (Recommended for Python integration)
 ```bash
-# Create isolated environment
-conda create -n slam_dense python=3.10 -y
-conda activate slam_dense
+git clone <your-repo-url>
+cd ORB_SLAM3_RGBD_DenseSlamReconstrction
 
-# Install Open3D and Python dependencies
-pip install open3d numpy opencv-python
-
-# ORB_SLAM3 will be built separately with system dependencies
+# Initialize and update git submodules (IMPORTANT!)
+git submodule update --init --recursive
 ```
 
-### Option 2: System-level Build (Best for ORB_SLAM3 performance)
+**Important:** The ORB_SLAM3 library is included as a git submodule. You must run `git submodule update --init --recursive` to download it.
+
+## Step 2: Install System Dependencies
+
 ```bash
-# ORB_SLAM3 built with system libraries
-# Python scripts use existing rs_open3d environment
+# Install build tools
+sudo apt-get update
+sudo apt-get install -y build-essential cmake git
+
+# Install required libraries
+sudo apt-get install -y \
+    libeigen3-dev \
+    libssl-dev \
+    libusb-1.0-0-dev \
+    pkg-config \
+    libgtk-3-dev \
+    libglfw3-dev \
+    libgl1-mesa-dev \
+    libglu1-mesa-dev
+
+# Install RealSense SDK
+sudo apt-get install -y librealsense2-dev librealsense2-utils
 ```
 
-## Dependencies
+Alternatively, use the automated installation script:
 
-### ORB_SLAM3 Requirements
-- **OpenCV** (3.2 or higher)
-- **Eigen3** (3.1.0 or higher)
-- **Pangolin** (for visualization)
-- **RealSense SDK** (librealsense2)
-- **C++ compiler** (C++14 support)
-
-### Open3D Requirements
-- **Python 3.7+**
-- **Open3D** (already installed in rs_open3d)
-- **NumPy**
-
-## Build Status
-
-- [ ] ORB_SLAM3 third-party libraries (DBoW2, g2o, Sophus)
-- [ ] ORB_SLAM3 core library
-- [ ] ORB_SLAM3 RGB-D examples
-- [ ] Integration scripts
-
-## Directory Structure
-
+```bash
+./install/install_dependencies.sh
 ```
-slam_dense_reconstruction/
-├── scripts/
-│   ├── 01_run_orbslam3.sh          # Run ORB_SLAM3 on .bag file
-│   ├── 02_convert_trajectory.py     # Convert TUM trajectory to Open3D format
-│   ├── 03_dense_reconstruction.py   # Open3D TSDF integration
-│   └── run_full_pipeline.sh         # Complete workflow
-├── config/
-│   ├── orbslam3_realsense.yaml     # ORB_SLAM3 camera config
-│   └── open3d_integration.yml      # Open3D TSDF parameters
-├── output/
-│   ├── sparse/                      # ORB_SLAM3 outputs (trajectory, map)
-│   └── dense/                       # Open3D outputs (mesh, point cloud)
-└── docs/
-    ├── SETUP.md                     # This file
-    └── BUILD_ORBSLAM3.md           # Build instructions
+
+## Step 3: Set Up Python Environment
+
+### Option A: Using Conda (Recommended)
+
+```bash
+# Create conda environment
+conda create -n rs_open3d python=3.9
+conda activate rs_open3d
+
+# Install Python dependencies
+pip install -r requirements.txt
+```
+
+### Option B: Using System Python
+
+```bash
+pip install --user -r requirements.txt
+```
+
+## Step 4: Install Pangolin
+
+Pangolin is required for ORB_SLAM3 visualization:
+
+```bash
+./scripts/install_pangolin.sh
+```
+
+## Step 5: Build ORB_SLAM3
+
+```bash
+# Make sure you're in the conda environment (if using conda)
+conda activate rs_open3d
+
+# Build ORB_SLAM3
+./scripts/build_orbslam3.sh
+```
+
+This will:
+1. Build ORB_SLAM3 third-party libraries (DBoW2, g2o, Sophus)
+2. Build the ORB_SLAM3 core library
+3. Build RGB-D examples
+
+## Step 6: Download ORB Vocabulary
+
+Download the ORB vocabulary file (required for ORB_SLAM3):
+
+```bash
+cd external/orbslam3/Vocabulary
+wget https://github.com/UZ-SLAMLab/ORB_SLAM3/releases/download/v1.0-release/ORBvoc.txt.tar.gz
+tar -xf ORBvoc.txt.tar.gz
+rm ORBvoc.txt.tar.gz
+cd ../../..
+```
+
+## Step 7: Verify Installation
+
+Check that all components are properly installed:
+
+```bash
+# Check ORB_SLAM3 library
+ls -lh external/orbslam3/lib/libORB_SLAM3.so
+
+# Check ORB_SLAM3 executable
+ls -lh external/orbslam3/Examples/RGB-D/rgbd_tum
+
+# Check vocabulary file
+ls -lh external/orbslam3/Vocabulary/ORBvoc.txt
+
+# Test Python environment
+python -c "import open3d; import numpy; import cv2; import pyrealsense2; print('All Python packages OK')"
+```
+
+## Troubleshooting
+
+### Git Submodule Issues
+
+If you cloned the repository without `--recursive` or the submodule is empty:
+
+```bash
+git submodule update --init --recursive
+```
+
+### ORB_SLAM3 Build Fails
+
+1. Make sure you've activated the conda environment:
+   ```bash
+   conda activate rs_open3d
+   ```
+
+2. Check OpenCV installation:
+   ```bash
+   python -c "import cv2; print(cv2.__version__)"
+   ```
+
+3. Rebuild with verbose output:
+   ```bash
+   cd external/orbslam3
+   rm -rf build
+   mkdir build && cd build
+   cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3" -DBUILD_EXAMPLES=ON
+   make -j$(nproc) VERBOSE=1
+   ```
+
+### Pangolin Issues
+
+If Pangolin libraries are not found:
+
+```bash
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+```
+
+Add this to your `~/.bashrc` to make it permanent:
+
+```bash
+echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+source ~/.bashrc
 ```
 
 ## Next Steps
 
-1. Build ORB_SLAM3 (see BUILD_ORBSLAM3.md)
-2. Configure camera parameters for RealSense D456
-3. Create integration scripts
-4. Test on sample data
+After successful installation, proceed to the [Usage Guide](USAGE.md) to learn how to run the pipeline.

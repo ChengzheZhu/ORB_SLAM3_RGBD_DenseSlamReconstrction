@@ -1,4 +1,5 @@
 # ORB_SLAM3 + Open3D Dense Reconstruction Pipeline Configuration
+# Note: Paths can be absolute or relative to the project root directory
 
 # Dataset Configuration
 dataset:
@@ -21,14 +22,14 @@ extraction:
 
 # ORB_SLAM3 Configuration
 orbslam:
-  # ORB_SLAM3 installation directory
-  slam_dir: "/home/chengzhe/projects/ORB_SLAM3"
+  # ORB_SLAM3 installation directory (now included as git submodule)
+  slam_dir: "external/orbslam3"
 
-  # Camera configuration file for ORB_SLAM3
-  camera_config: "/home/chengzhe/projects/slam_dense_reconstruction/config/camera/RealSense_D456.yaml"
+  # Camera configuration file for ORB_SLAM3 (relative to project root)
+  camera_config: "config/camera/RealSense_D456.yaml"
 
-  # Vocabulary file
-  vocab_file: "/home/chengzhe/projects/ORB_SLAM3/Vocabulary/ORBvoc.txt"
+  # Vocabulary file (relative to project root)
+  vocab_file: "external/orbslam3/Vocabulary/ORBvoc.txt"
 
   # Enable/disable visualization (true = viewer, false = headless for batch processing)
   use_viewer: true
@@ -46,8 +47,8 @@ reconstruction:
 
 # Output Configuration
 output:
-  # Base output directory
-  base_dir: "/home/chengzhe/projects/slam_dense_reconstruction/output"
+  # Base output directory (relative to project root)
+  base_dir: "output"
 
   # Sparse reconstruction outputs (trajectories)
   sparse_dir: "sparse"
