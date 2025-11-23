@@ -96,11 +96,16 @@ def main():
         config['dataset']['intrinsic_file'] = str(bag_dir / bag_name / 'intrinsic.json')
 
     # Display configuration
+    recon_mode = config.get('reconstruction', {}).get('mode', 'mesh')
     print(f"\nConfiguration:")
     print(f"  Bag file: {config['dataset']['bag_file']}")
     print(f"  Frames dir: {config['dataset']['frames_dir']}")
     print(f"  Output dir: {config['output']['base_dir']}")
-    print(f"  Voxel size: {config['reconstruction']['voxel_size']}m")
+    print(f"  Reconstruction mode: {recon_mode}")
+    if recon_mode in ['mesh', 'both']:
+        print(f"  Mesh voxel size: {config['reconstruction']['mesh']['voxel_size']}m")
+    if recon_mode in ['pointcloud', 'both']:
+        print(f"  Point cloud voxel size: {config['reconstruction']['pointcloud']['downsample_voxel']}m")
 
     # Setup paths
     frames_dir = config['dataset']['frames_dir']
@@ -114,6 +119,7 @@ def main():
     trajectory_o3d = os.path.join(sparse_dir, 'trajectory_open3d.log')
     mesh_file = os.path.join(dense_dir, config['output']['mesh_name'])
 
+    trajectory_json = os.path.join(sparse_dir, "trajectory_posegraph.json")
     # Create output directories
     os.makedirs(sparse_dir, exist_ok=True)
     os.makedirs(dense_dir, exist_ok=True)
@@ -168,36 +174,84 @@ def main():
         cmd = [
             'python', 'scripts/02_convert_trajectory.py',
             '--input', trajectory_tum,
-            '--output_log', trajectory_o3d
+            '--output_log', trajectory_o3d,
+            '--output_json', trajectory_json
         ]
 
         if not run_command(cmd, "Step 3: Convert trajectory to Open3D format"):
             return 1
 
     # Step 4: Dense reconstruction
+    recon_mode = config.get('reconstruction', {}).get('mode', 'mesh')
+    
     if args.start_step <= 4:
-        cmd = [
-            'python', 'scripts/03_dense_reconstruction.py',
-            '--frames_dir', frames_dir,
-            '--intrinsic', intrinsic_file,
-            '--trajectory', trajectory_o3d,
-            '--output', mesh_file,
-            '--voxel_size', str(config['reconstruction']['voxel_size']),
-            '--depth_max', str(config['reconstruction']['depth_max'])
-        ]
-
-        if not run_command(cmd, "Step 4: Dense TSDF reconstruction"):
-            return 1
+        # Create pointcloud output directory if needed
+        if recon_mode in ['pointcloud', 'both']:
+            pointcloud_dir = os.path.join(dense_dir, config['output'].get('pointcloud_dir', 'pointclouds'))
+            os.makedirs(pointcloud_dir, exist_ok=True)
+        
+        # Run TSDF mesh reconstruction
+        if recon_mode in ['mesh', 'both']:
+            mesh_config = config['reconstruction']['mesh']
+            cmd = [
+                'python', 'scripts/03_dense_reconstruction.py',
+                '--frames_dir', frames_dir,
+                '--intrinsic', intrinsic_file,
+                '--trajectory', trajectory_o3d,
+                '--output', mesh_file,
+                '--voxel_size', str(mesh_config['voxel_size']),
+                '--depth_max', str(mesh_config['depth_max'])
+            ]
+            
+            if not run_command(cmd, "Step 4a: TSDF mesh reconstruction"):
+                return 1
+        
+        # Run point cloud export
+        if recon_mode in ['pointcloud', 'both']:
+            pc_config = config['reconstruction']['pointcloud']
+            cmd = [
+                'python', 'scripts/04_export_point_clouds.py',
+                '--frames_dir', frames_dir,
+                '--intrinsic', intrinsic_file,
+                '--trajectory', trajectory_o3d,
+                '--output_dir', pointcloud_dir,
+                '--depth_scale', '1000.0',
+                '--depth_max', str(pc_config['depth_max']),
+                '--downsample_voxel', str(pc_config['downsample_voxel']),
+                '--frame_skip', str(pc_config['frame_skip'])
+            ]
+            
+            if pc_config.get('export_individual', False):
+                cmd.append('--export_individual')
+            
+            step_name = "Step 4b: Point cloud export" if recon_mode == 'both' else "Step 4: Point cloud export"
+            if not run_command(cmd, step_name):
+                return 1
 
     # Pipeline complete!
     print("\n" + "="*80)
     print("🎉 PIPELINE COMPLETE!")
     print("="*80)
-    print(f"\nOutput mesh: {mesh_file}")
-    print(f"Mesh size: {os.path.getsize(mesh_file) / (1024**2):.1f} MB")
-
-    print("\nVisualize with:")
-    print(f'  python -c "import open3d as o3d; mesh = o3d.io.read_triangle_mesh(\'{mesh_file}\'); o3d.visualization.draw_geometries([mesh])"')
+    
+    recon_mode = config.get('reconstruction', {}).get('mode', 'mesh')
+    
+    # Display mesh output
+    if recon_mode in ['mesh', 'both']:
+        if os.path.exists(mesh_file):
+            print(f"\nMesh output: {mesh_file}")
+            print(f"Mesh size: {os.path.getsize(mesh_file) / (1024**2):.1f} MB")
+            print("\nVisualize mesh:")
+            print(f'  python -c "import open3d as o3d; mesh = o3d.io.read_triangle_mesh(\'{mesh_file}\'); o3d.visualization.draw_geometries([mesh])"')
+    
+    # Display point cloud output
+    if recon_mode in ['pointcloud', 'both']:
+        pointcloud_dir = os.path.join(dense_dir, config['output'].get('pointcloud_dir', 'pointclouds'))
+        merged_pc = os.path.join(pointcloud_dir, 'merged_point_cloud.ply')
+        if os.path.exists(merged_pc):
+            print(f"\nPoint cloud output: {merged_pc}")
+            print(f"Point cloud size: {os.path.getsize(merged_pc) / (1024**2):.1f} MB")
+            print("\nVisualize point cloud:")
+            print(f'  python -c "import open3d as o3d; pcd = o3d.io.read_point_cloud(\'{merged_pc}\'); o3d.visualization.draw_geometries([pcd])"')
 
     return 0
 

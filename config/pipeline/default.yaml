@@ -1,17 +1,20 @@
 # ORB_SLAM3 + Open3D Dense Reconstruction Pipeline Configuration
 # Note: Paths can be absolute or relative to the project root directory
 
-# Dataset Configuration
+# # Dataset Configuration
+# dataset:
+#   # Path to RealSense bag file
+#   bag_file: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516.bag"
+
+#   # Output directory for extracted frames (will be created if doesn't exist)
+#   frames_dir: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516"
+
+#   # Camera intrinsics JSON file (will be created during frame extraction)
+  # intrinsic_file: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516/intrinsic.json"
 dataset:
-  # Path to RealSense bag file
-  bag_file: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516.bag"
-
-  # Output directory for extracted frames (will be created if doesn't exist)
-  frames_dir: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516"
-
-  # Camera intrinsics JSON file (will be created during frame extraction)
-  intrinsic_file: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516/intrinsic.json"
-
+  bag_file: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516_trimmed.bag"
+  frames_dir: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516_trimmed"
+  intrinsic_file: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516_trimmed/intrinsic.json"
 # Frame Extraction Settings
 extraction:
   # Extract every Nth frame (1 = all frames, 3 = every 3rd frame)
@@ -36,14 +39,36 @@ orbslam:
 
 # Dense Reconstruction Settings
 reconstruction:
-  # TSDF voxel size in meters (smaller = higher resolution, more memory)
-  voxel_size: 0.01
-
-  # Maximum depth in meters
-  depth_max: 3.0
-
-  # Depth truncation (distance beyond which depth is ignored)
-  depth_trunc: 3.0
+  # Reconstruction mode: "mesh", "pointcloud", or "both"
+  mode: "both"
+  
+  # TSDF Mesh Settings (when mode = "mesh" or "both")
+  mesh:
+    # TSDF voxel size in meters (smaller = higher resolution, more memory)
+    voxel_size: 0.01
+    
+    # Maximum depth in meters
+    depth_max: 3.0
+    
+    # Depth truncation (distance beyond which depth is ignored)
+    depth_trunc: 3.0
+  
+  # Point Cloud Settings (when mode = "pointcloud" or "both")
+  pointcloud:
+    # Export merged point cloud
+    export_merged: true
+    
+    # Export individual frame point clouds
+    export_individual: false
+    
+    # Voxel size for downsampling (0 = no downsampling)
+    downsample_voxel: 0.01
+    
+    # Process every Nth frame (1 = all frames)
+    frame_skip: 1
+    
+    # Maximum depth in meters
+    depth_max: 3.0
 
 # Output Configuration
 output:
@@ -53,8 +78,11 @@ output:
   # Sparse reconstruction outputs (trajectories)
   sparse_dir: "sparse"
 
-  # Dense reconstruction outputs (meshes)
+  # Dense reconstruction outputs (meshes and point clouds)
   dense_dir: "dense"
 
   # Final mesh filename
   mesh_name: "mesh.ply"
+  
+  # Point cloud output directory
+  pointcloud_dir: "pointclouds"
