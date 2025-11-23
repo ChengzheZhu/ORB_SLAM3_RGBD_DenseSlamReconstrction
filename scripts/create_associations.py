@@ -48,10 +48,10 @@ def create_associations(dataset_dir, output_file):
 def main():
     parser = argparse.ArgumentParser(description="Create TUM association file")
     parser.add_argument('--dataset', type=str,
-                       default='/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516',
+                       
                        help='Dataset directory containing color/ and depth/ folders')
     parser.add_argument('--output', type=str,
-                       default='/home/chengzhe/projects/slam_dense_reconstruction/output/associations.txt',
+                       
                        help='Output association file')
 
     args = parser.parse_args()

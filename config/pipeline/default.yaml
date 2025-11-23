@@ -2,19 +2,17 @@
 # Note: Paths can be absolute or relative to the project root directory
 
 # # Dataset Configuration
-# dataset:
+dataset:
 #   # Path to RealSense bag file
-#   bag_file: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516.bag"
+  bag_file: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516_trimmed.bag"
 
 #   # Output directory for extracted frames (will be created if doesn't exist)
-#   frames_dir: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516"
+  frames_dir: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516_trimmed"
 
 #   # Camera intrinsics JSON file (will be created during frame extraction)
-  # intrinsic_file: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516/intrinsic.json"
-dataset:
-  bag_file: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516_trimmed.bag"
-  frames_dir: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516_trimmed"
   intrinsic_file: "/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516_trimmed/intrinsic.json"
+
+
 # Frame Extraction Settings
 extraction:
   # Extract every Nth frame (1 = all frames, 3 = every 3rd frame)

@@ -133,13 +133,13 @@ def save_pose_graph_json(poses, output_file):
 def main():
     parser = argparse.ArgumentParser(description="Convert ORB_SLAM3 trajectory to Open3D format")
     parser.add_argument('--input', type=str,
-                       default='/home/chengzhe/projects/slam_dense_reconstruction/output/sparse/trajectory_tum.txt',
+                       
                        help='Input TUM trajectory file from ORB_SLAM3')
     parser.add_argument('--output_log', type=str,
-                       default='/home/chengzhe/projects/slam_dense_reconstruction/output/sparse/trajectory_open3d.log',
+                       
                        help='Output Open3D trajectory log')
     parser.add_argument('--output_json', type=str,
-                       default='/home/chengzhe/projects/slam_dense_reconstruction/output/sparse/trajectory_posegraph.json',
+                       
                        help='Output pose graph JSON')
 
     args = parser.parse_args()

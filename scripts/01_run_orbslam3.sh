@@ -71,6 +71,7 @@ if [ ! -f "$ASSOCIATIONS_FILE" ]; then
 fi
 
 # Check ORB_SLAM3 executable
+# Current Pipeline uses frames. To use live sensor inputs, re-congifgure the pipe line to use "$ORB_SLAM3_DIR/Examples/RGB-D/rgbd_realsense_D435i"
 ORBSLAM_EXEC="$ORB_SLAM3_DIR/Examples/RGB-D/rgbd_tum"
 if [ ! -f "$ORBSLAM_EXEC" ]; then
     echo -e "${RED}ERROR: ORB_SLAM3 executable not found at $ORBSLAM_EXEC${NC}"

@@ -137,16 +137,16 @@ def integrate_rgbd_frames(frames_dir, intrinsic, poses, depth_scale=1000.0,
 def main():
     parser = argparse.ArgumentParser(description="Dense reconstruction with ORB_SLAM3 trajectory")
     parser.add_argument('--frames_dir', type=str,
-                       default='/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516',
+                       
                        help='Directory containing frames (with color/ and depth/ subdirs)')
     parser.add_argument('--intrinsic', type=str,
-                       default='/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516/intrinsic.json',
+                       
                        help='Camera intrinsic JSON file')
     parser.add_argument('--trajectory', type=str,
-                       default='/home/chengzhe/projects/slam_dense_reconstruction/output/sparse/trajectory_open3d.log',
+                       
                        help='ORB_SLAM3 trajectory in Open3D format')
     parser.add_argument('--output', type=str,
-                       default='/home/chengzhe/projects/slam_dense_reconstruction/output/dense/mesh.ply',
+                       
                        help='Output mesh file')
     parser.add_argument('--voxel_size', type=float, default=0.01,
                        help='TSDF voxel size in meters')
