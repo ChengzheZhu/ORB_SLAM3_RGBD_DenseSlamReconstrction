@@ -36,16 +36,19 @@ else
     exit 1
 fi
 
-# Check OpenCV (from conda env or system)
-if /home/chengzhe/.conda/envs/rs_open3d/bin/python -c "import cv2" 2>/dev/null; then
-    CV_VERSION=$(/home/chengzhe/.conda/envs/rs_open3d/bin/python -c "import cv2; print(cv2.__version__)")
-    echo -e "${GREEN}✓ OpenCV: $CV_VERSION (conda env)${NC}"
-    # Export OpenCV path for CMake
-    export OpenCV_DIR="/home/chengzhe/.conda/envs/rs_open3d/lib/cmake/opencv4"
+# Check OpenCV C++ libraries (required for ORB_SLAM3)
+if [ -d "/usr/local/lib/cmake/opencv4" ]; then
+    echo -e "${GREEN}✓ OpenCV: Found at /usr/local/lib/cmake/opencv4${NC}"
+    export OpenCV_DIR="/usr/local/lib/cmake/opencv4"
+elif [ -d "/usr/lib/x86_64-linux-gnu/cmake/opencv4" ]; then
+    echo -e "${GREEN}✓ OpenCV: Found at /usr/lib/x86_64-linux-gnu/cmake/opencv4${NC}"
+    export OpenCV_DIR="/usr/lib/x86_64-linux-gnu/cmake/opencv4"
 elif pkg-config --exists opencv4; then
     echo -e "${GREEN}✓ OpenCV: $(pkg-config --modversion opencv4)${NC}"
 else
-    echo -e "${YELLOW}⚠ OpenCV not found - ORB_SLAM3 may fail to build${NC}"
+    echo -e "${RED}✗ OpenCV C++ libraries not found${NC}"
+    echo "Install: sudo apt-get install libopencv-dev"
+    exit 1
 fi
 
 # Check Pangolin

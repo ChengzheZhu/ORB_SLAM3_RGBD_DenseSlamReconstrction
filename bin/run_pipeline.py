@@ -16,6 +16,7 @@ import yaml
 import argparse
 import subprocess
 from pathlib import Path
+from datetime import datetime
 
 
 def load_config(config_file):
@@ -32,7 +33,12 @@ def run_command(cmd, description):
     print(f"{'='*80}")
     print(f"Command: {' '.join(cmd)}\n")
 
-    result = subprocess.run(cmd, capture_output=False, text=True)
+    # Prepare environment - remove PYTHONPATH to use conda environment packages
+    env = os.environ.copy()
+    if 'PYTHONPATH' in env:
+        del env['PYTHONPATH']
+
+    result = subprocess.run(cmd, capture_output=False, text=True, env=env)
 
     if result.returncode != 0:
         print(f"\n❌ Error: {description} failed with code {result.returncode}")
@@ -95,12 +101,22 @@ def main():
         config['dataset']['frames_dir'] = str(bag_dir / bag_name)
         config['dataset']['intrinsic_file'] = str(bag_dir / bag_name / 'intrinsic.json')
 
+    # Create timestamped output directory based on bag filename
+    bag_filename = Path(config['dataset']['bag_file']).stem
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    run_name = f"{bag_filename}_{timestamp}"
+
+    # Update output base to include run-specific subdirectory
+    output_base_root = config['output']['base_dir']
+    output_base = os.path.join(output_base_root, run_name)
+
     # Display configuration
     recon_mode = config.get('reconstruction', {}).get('mode', 'mesh')
     print(f"\nConfiguration:")
     print(f"  Bag file: {config['dataset']['bag_file']}")
     print(f"  Frames dir: {config['dataset']['frames_dir']}")
-    print(f"  Output dir: {config['output']['base_dir']}")
+    print(f"  Output dir: {output_base}")
+    print(f"  Run name: {run_name}")
     print(f"  Reconstruction mode: {recon_mode}")
     if recon_mode in ['mesh', 'both']:
         print(f"  Mesh voxel size: {config['reconstruction']['mesh']['voxel_size']}m")
@@ -110,7 +126,6 @@ def main():
     # Setup paths
     frames_dir = config['dataset']['frames_dir']
     intrinsic_file = config['dataset']['intrinsic_file']
-    output_base = config['output']['base_dir']
     sparse_dir = os.path.join(output_base, config['output']['sparse_dir'])
     dense_dir = os.path.join(output_base, config['output']['dense_dir'])
 
@@ -126,17 +141,16 @@ def main():
 
     # Step 0: Extract frames (optional)
     if args.extract:
-        if args.start_step <= 0:
-            cmd = [
-                'python', 'scripts/00_extract_frames.py',
-                '--bag', config['dataset']['bag_file'],
-                '--output', frames_dir,
-                '--stride', str(config['extraction']['frame_stride']),
-                '--max_frames', str(config['extraction']['max_frames'])
-            ]
+        cmd = [
+            'python', 'scripts/00_extract_frames.py',
+            '--bag', config['dataset']['bag_file'],
+            '--output', frames_dir,
+            '--stride', str(config['extraction']['frame_stride']),
+            '--max_frames', str(config['extraction']['max_frames'])
+        ]
 
-            if not run_command(cmd, "Step 0: Extract frames from bag file"):
-                return 1
+        if not run_command(cmd, "Step 0: Extract frames from bag file"):
+            return 1
 
     # Check if frames exist
     if not os.path.exists(frames_dir):
@@ -159,7 +173,7 @@ def main():
     if args.start_step <= 2:
         # Add headless flag based on config
         headless_flag = [] if config['orbslam'].get('use_viewer', True) else ['--headless']
-        cmd = ['./scripts/01_run_orbslam3.sh'] + headless_flag + [frames_dir]
+        cmd = ['./scripts/01_run_orbslam3.sh'] + headless_flag + [frames_dir, sparse_dir]
 
         if not run_command(cmd, "Step 2: Run ORB_SLAM3"):
             return 1

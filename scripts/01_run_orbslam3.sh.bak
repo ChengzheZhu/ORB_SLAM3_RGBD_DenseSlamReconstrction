@@ -16,7 +16,6 @@ CONFIG_FILE="$PROJECT_DIR/config/camera/RealSense_D456.yaml"
 # Parse arguments
 HEADLESS_MODE=""
 DATASET_DIR=""
-OUTPUT_DIR=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -25,11 +24,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         *)
-            if [ -z "$DATASET_DIR" ]; then
-                DATASET_DIR="$1"
-            elif [ -z "$OUTPUT_DIR" ]; then
-                OUTPUT_DIR="$1"
-            fi
+            DATASET_DIR="$1"
             shift
             ;;
     esac
@@ -40,11 +35,8 @@ if [ -z "$DATASET_DIR" ]; then
     DATASET_DIR="/home/chengzhe/Data/OMS_data3/rs_bags/1101/20251101_235516"
 fi
 
-# Set default output directory if not provided
-if [ -z "$OUTPUT_DIR" ]; then
-    OUTPUT_DIR="$PROJECT_DIR/output/sparse"
-fi
-
+# Output directory
+OUTPUT_DIR="$PROJECT_DIR/output/sparse"
 mkdir -p "$OUTPUT_DIR"
 
 # Colors for output
@@ -101,7 +93,7 @@ echo -e "${YELLOW}Running ORB_SLAM3...${NC}"
 cd "$ORB_SLAM3_DIR"
 
 # Set library path for Pangolin
-export LD_LIBRARY_PATH=$ORB_SLAM3_DIR/lib:/usr/local/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 # Run with or without viewer
 if [ -n "$HEADLESS_MODE" ]; then
